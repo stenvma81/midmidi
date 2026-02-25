@@ -3,11 +3,24 @@
 ############################
 
 venv/
+.venv/
+env/
 .env/
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage/
+.python-version
+
+# A previously created venv-like folder in this repo
+midMidi/backend/source/
 
 ############################
 # FastAPI / Uvicorn
@@ -40,7 +53,12 @@ vite.svg
 # IDE
 ############################
 
-.vscode/
+*.code-workspace
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
 .idea/
 
 ############################

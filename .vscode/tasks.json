@@ -1,0 +1,79 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Backend: uvicorn (reload)",
+      "type": "shell",
+      "command": "${workspaceFolder}/midMidi/backend/venv/bin/python",
+      "args": [
+        "-m",
+        "uvicorn",
+        "server:app",
+        "--reload",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/midMidi/backend"
+      },
+      "problemMatcher": [],
+      "isBackground": true
+    },
+    {
+      "label": "UI: vite dev",
+      "type": "shell",
+      "command": "npm run dev",
+      "options": {
+        "cwd": "${workspaceFolder}/midMidi/midMidi-ui"
+      },
+      "problemMatcher": [],
+      "isBackground": true
+    },
+    {
+      "label": "Dev: backend + ui",
+      "dependsOn": ["Backend: uvicorn (reload)", "UI: vite dev"],
+      "dependsOrder": "parallel",
+      "problemMatcher": []
+    },
+    {
+      "label": "UI: lint",
+      "type": "shell",
+      "command": "npm run lint",
+      "options": {
+        "cwd": "${workspaceFolder}/midMidi/midMidi-ui"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "UI: format",
+      "type": "shell",
+      "command": "npm run format",
+      "options": {
+        "cwd": "${workspaceFolder}/midMidi/midMidi-ui"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Backend: ruff check",
+      "type": "shell",
+      "command": "${workspaceFolder}/midMidi/backend/venv/bin/python",
+      "args": ["-m", "ruff", "check", "."],
+      "options": {
+        "cwd": "${workspaceFolder}/midMidi/backend"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Backend: ruff format",
+      "type": "shell",
+      "command": "${workspaceFolder}/midMidi/backend/venv/bin/python",
+      "args": ["-m", "ruff", "format", "."],
+      "options": {
+        "cwd": "${workspaceFolder}/midMidi/backend"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

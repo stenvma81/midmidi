@@ -1,39 +1,36 @@
-# Ableton Collaborative MIDI Controller (Prototype)
+# midmidi (Prototype)
 
-This project is an experimental **Ableton Live controller interface** built with:
+Experimental **browser-based MIDI controller + monitor** intended to be routed into Ableton Live.
 
-* **Python + FastAPI** – MIDI bridge and backend
-* **Vue + Vite** – Browser-based control interface
-* **WebSockets** – Real-time MIDI monitoring
-* **python-rtmidi** – MIDI communication
+- Backend: **FastAPI** + **python-rtmidi** (MIDI I/O + WebSocket broadcast)
+- UI: **Vue 3 + Vite** (clip-style sequencer grid + MIDI monitor)
 
-The goal is to develop a **networked collaborative controller** where multiple users can interact with a shared Ableton project.
+**Current prototype features**
 
-Current prototype features:
-
-* Send MIDI notes from a web interface
-* Simple 8-step sequencer
-* Real-time MIDI monitor from Ableton
-* FastAPI MIDI bridge
-* Browser-based UI
+- Send MIDI notes from the browser
+- Sequencer grid (4–64 steps, chromatic note rows)
+- Per-step enable/disable and velocity
+- Octave transpose (-1 / 0 / +1)
+- MIDI monitor (shows recent inbound/outbound messages)
+- WebSocket fan-out to all connected clients
 
 ---
 
 # Project Structure
 
 ```
-midMidi/
-
-server/
-    server.py
-
-ui/
-    src/
-        App.vue
-    package.json
-
-.gitignore
 README.md
+midMidi/
+    backend/
+        server.py
+        requirements.txt
+        requirements-dev.txt
+        pyproject.toml
+    midMidi-ui/
+        package.json
+        vite.config.ts
+        src/
+            App.vue
 ```
 
 ---
@@ -44,34 +41,33 @@ README.md
 
 Required:
 
-* Python 3.10+
-* Node.js 18+
-* Ableton Live
+- Python 3.10+
+- Node.js 18+
+- Ableton Live (optional, but the intended target for MIDI routing)
 
 macOS users also need:
 
-* IAC MIDI Driver enabled (see below)
+- IAC MIDI Driver enabled (see below)
 
 ---
 
 # Setup
 
-## 1. Clone Repository
+## 1. Clone repository
 
-```
+```bash
 git clone <repo-url>
-cd ableton-controller
+cd midmidi
 ```
 
 ---
 
-# Python Server Setup
+# Backend (FastAPI + MIDI)
 
-## 1. Create Virtual Environment
+## 1. Create a virtual environment
 
-```
-cd server
-
+```bash
+cd midMidi/backend
 python3 -m venv venv
 source venv/bin/activate
 ```
@@ -84,34 +80,36 @@ You should now see:
 
 ---
 
-## 2. Install Dependencies
+## 2. Install dependencies
 
-```
+```bash
 pip install -r requirements.txt
 ```
 
-Minimal dependencies:
+Optional (dev tooling):
 
+```bash
+pip install -r requirements-dev.txt
 ```
-fastapi
-uvicorn
-python-rtmidi
-websockets
-```
+
+Notes:
+
+- MIDI port selection is automatic by default (first available port).
+- You can override it via env vars: `MIDMIDI_MIDI_OUT_PORT` and `MIDMIDI_MIDI_IN_PORT` (numeric indices printed on startup).
 
 ---
 
-# Vue UI Setup
+# UI (Vue + Vite)
 
 Open a new terminal:
 
-```
-cd ui
+```bash
+cd midMidi/midMidi-ui
 ```
 
 Install dependencies:
 
-```
+```bash
 npm install
 ```
 
@@ -191,19 +189,20 @@ Remote ✓
 
 ---
 
-# Running the System
+# Running the system (dev)
 
 You need **two terminals**.
 
 ---
 
-## Terminal 1 — Start Server
+## Terminal 1 — start backend
 
-```
-cd backend
+```bash
+cd midMidi/backend
 source venv/bin/activate
 
-uvicorn server:app --reload
+# default: http://localhost:8000
+python -m uvicorn server:app --reload --host 0.0.0.0 --port 8000
 ```
 
 Expected output:
@@ -220,11 +219,10 @@ MIDI listener running
 
 ---
 
-## Terminal 2 — Start UI
+## Terminal 2 — start UI
 
-```
-cd mimidi-ui
-
+```bash
+cd midMidi/midMidi-ui
 npm run dev
 ```
 
@@ -234,80 +232,96 @@ Expected output:
 Local: http://localhost:5173
 ```
 
-Open in browser:
+Open in browser: `http://localhost:5173`
 
-```
-http://localhost:5173
-```
+Dev proxy behavior:
 
----
-
-# Using the Interface
-
-## MIDI Notes
-
-Clicking note buttons sends MIDI notes to Ableton.
+- UI requests to `/note/...` are proxied to `http://localhost:8000`
+- UI WebSockets under `/ws/...` are proxied to `ws://localhost:8000`
 
 ---
 
-## Step Sequencer
+# Using the interface
 
-1. Select a step
-2. Click a note
-3. Press **Play**
+## Sequencer grid
 
-The sequencer will send MIDI notes to Ableton.
+1. Set **Steps** to choose the sequence length (4–64)
+2. Click a cell in the grid to set a note for that step (columns = steps, rows = notes)
+3. Click the active cell again to disable that step
+4. Adjust **Velocity** for the selected step
+5. Set **Octave** (-1 / 0 / +1) to transpose playback
+6. Press **Play** (sends one note every ~300ms)
+
+## MIDI monitor
+
+Toggle the monitor on/off from the UI header.
+
+The monitor displays recent WebSocket messages, including:
+
+- `MIDI IN [...]` (messages received from the selected MIDI input)
+- `MIDI OUT [...]` (messages sent by the backend)
 
 ---
 
-## MIDI Monitor
+# Stopping
 
-The MIDI Monitor shows incoming MIDI messages from Ableton in real time.
+Stop the backend:
 
-Example:
-
-```
-MIDI [144, 60, 100]
-MIDI [128, 60, 0]
-```
-
----
-
-# Stopping the System
-
-Stop the server:
-
-```
-CTRL+C
-```
+`CTRL+C`
 
 Stop the UI:
 
-```
-CTRL+C
+`CTRL+C`
+
+Deactivate venv: `deactivate`
+
+---
+
+# API reference (backend)
+
+- `POST /note/{note}`: sends a MIDI note-on then note-off (`velocity` query param optional, default 100; duration currently ~100ms)
+- `GET/WS /ws/midi`: WebSocket that receives broadcast text messages
+
+Example:
+
+```bash
+curl -X POST http://localhost:8000/note/60
 ```
 
-Deactivate venv:
+WebSocket URL (when connecting directly to backend): `ws://localhost:8000/ws/midi`
 
+---
+
+# Development commands
+
+Backend (from `midMidi/backend`, with venv activated):
+
+```bash
+python -m ruff check .
+python -m ruff format .
 ```
-deactivate
+
+UI (from `midMidi/midMidi-ui`):
+
+```bash
+npm run lint
+npm run format
+npm run build
 ```
 
 ---
 
 # Troubleshooting
 
-## No MIDI Ports Found
+## No MIDI ports found
 
-Restart the server after enabling the IAC driver:
+If no system MIDI ports exist, the backend creates virtual ports named `midmidi-out` / `midmidi-in`.
 
-```
-uvicorn server:app --reload
-```
+On macOS, also confirm the IAC Driver is enabled, then restart the backend.
 
 ---
 
-## No MIDI Messages in Monitor
+## No MIDI messages in monitor
 
 Check Ableton:
 
@@ -324,12 +338,6 @@ Remote ✓
 
 ---
 
-## WebSocket Not Connecting
+## WebSocket not connecting
 
-Ensure server is running:
-
-```
-uvicorn server:app --reload
-```
-
-Then refresh the browser.
+Ensure the backend is running on `http://localhost:8000` (the UI dev proxy assumes that), then refresh the browser.
