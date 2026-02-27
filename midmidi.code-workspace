@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"ruff.nativeServer": "on",
+		"typescript.tsdk": "midMidi/midMidi-ui/node_modules/typescript/lib"
+	}
+}

@@ -49,6 +49,15 @@ macOS users also need:
 
 - IAC MIDI Driver enabled (see below)
 
+Windows users (if you want “virtual” / network MIDI ports) also need:
+
+- Tobias Erichsen **rtpMIDI** (and Apple **Bonjour** if the installer requests it)
+
+Why: `python-rtmidi` can create virtual ports on macOS/Linux, but on Windows the
+default Windows MultiMedia MIDI API does **not** support virtual ports. rtpMIDI
+solves this by creating network MIDI “Sessions” that show up as normal MIDI
+ports to apps.
+
 ---
 
 # Setup
@@ -68,9 +77,13 @@ cd midmidi
 
 ```bash
 cd midMidi/backend
-python3 -m venv venv
-source venv/bin/activate
+python -m venv venv
 ```
+
+Activate it:
+
+- macOS/Linux: `source venv/bin/activate`
+- Windows (PowerShell): `venv\Scripts\Activate.ps1`
 
 You should now see:
 
@@ -95,7 +108,9 @@ pip install -r requirements-dev.txt
 Notes:
 
 - MIDI port selection is automatic by default (first available port).
-- You can override it via env vars: `MIDMIDI_MIDI_OUT_PORT` and `MIDMIDI_MIDI_IN_PORT` (numeric indices printed on startup).
+- You can override it via env vars:
+  - By index: `MIDMIDI_MIDI_OUT_PORT` / `MIDMIDI_MIDI_IN_PORT`
+  - By name (substring match): `MIDMIDI_MIDI_OUT_PORT_NAME` / `MIDMIDI_MIDI_IN_PORT_NAME`
 
 ---
 
@@ -150,6 +165,39 @@ Default port:
 ```
 IAC Driver Bus 1
 ```
+
+---
+
+# Windows MIDI Setup (rtpMIDI)
+
+Install **rtpMIDI** (Tobias Erichsen). If the installer reports Bonjour is
+missing, install Apple **Bonjour** first (rtpMIDI uses it for “Zero-Config” peer
+discovery on LAN).
+
+Then:
+
+1. Open the rtpMIDI configuration app.
+2. In **My Sessions**, click `+` to add a session.
+3. Set the session **Local Name** to something recognizable (example: `midmidi`).
+4. Check the session’s **Enabled** checkbox.
+
+That Local Name is what most apps (and this backend) will see as the MIDI port.
+
+To force the backend to use that port, set:
+
+- `MIDMIDI_MIDI_OUT_PORT_NAME=midmidi`
+- `MIDMIDI_MIDI_IN_PORT_NAME=midmidi`
+
+PowerShell example:
+
+```powershell
+$env:MIDMIDI_MIDI_OUT_PORT_NAME = "midmidi"
+$env:MIDMIDI_MIDI_IN_PORT_NAME = "midmidi"
+```
+
+If you want to connect to a DAW on a different machine, connect peers in rtpMIDI
+via **Directory** → select a peer → **Connect** (rtpMIDI will re-connect on
+boot).
 
 ---
 
@@ -315,7 +363,12 @@ npm run build
 
 ## No MIDI ports found
 
-If no system MIDI ports exist, the backend creates virtual ports named `midmidi-out` / `midmidi-in`.
+If no system MIDI ports exist:
+
+- macOS/Linux: the backend creates virtual ports named `midmidi-out` / `midmidi-in`.
+- Windows: virtual ports are not supported by the default Windows MIDI API; use rtpMIDI
+  to create an enabled Session and then set `MIDMIDI_MIDI_OUT_PORT_NAME` /
+  `MIDMIDI_MIDI_IN_PORT_NAME` to its Local Name.
 
 On macOS, also confirm the IAC Driver is enabled, then restart the backend.
 

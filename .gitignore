@@ -6,6 +6,9 @@ venv/
 .venv/
 env/
 .env/
+.env
+.env.*
+!.env.example
 __pycache__/
 *.pyc
 *.pyo
@@ -27,6 +30,7 @@ midMidi/backend/source/
 ############################
 
 *.log
+logs/
 
 ############################
 # Node / Vue
@@ -35,13 +39,21 @@ midMidi/backend/source/
 node_modules/
 dist/
 build/
+dist-ssr/
+*.local
+
+# Package manager debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
 ############################
 # Vite
 ############################
 
 .vite/
-vite.svg
 
 ############################
 # macOS
@@ -54,12 +66,19 @@ vite.svg
 ############################
 
 *.code-workspace
+!midmidi.code-workspace
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 .idea/
+
+# Visual Studio / Windows
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
 
 ############################
 # Misc

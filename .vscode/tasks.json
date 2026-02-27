@@ -5,6 +5,9 @@
       "label": "Backend: uvicorn (reload)",
       "type": "shell",
       "command": "${workspaceFolder}/midMidi/backend/venv/bin/python",
+      "windows": {
+        "command": "${workspaceFolder}\\midMidi\\backend\\venv\\Scripts\\python.exe"
+      },
       "args": [
         "-m",
         "uvicorn",
@@ -59,6 +62,9 @@
       "label": "Backend: ruff check",
       "type": "shell",
       "command": "${workspaceFolder}/midMidi/backend/venv/bin/python",
+      "windows": {
+        "command": "${workspaceFolder}\\midMidi\\backend\\venv\\Scripts\\python.exe"
+      },
       "args": ["-m", "ruff", "check", "."],
       "options": {
         "cwd": "${workspaceFolder}/midMidi/backend"
@@ -69,6 +75,9 @@
       "label": "Backend: ruff format",
       "type": "shell",
       "command": "${workspaceFolder}/midMidi/backend/venv/bin/python",
+      "windows": {
+        "command": "${workspaceFolder}\\midMidi\\backend\\venv\\Scripts\\python.exe"
+      },
       "args": ["-m", "ruff", "format", "."],
       "options": {
         "cwd": "${workspaceFolder}/midMidi/backend"
